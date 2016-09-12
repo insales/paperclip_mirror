@@ -68,6 +68,36 @@ module Paperclip
         return @__fs_mirror unless @__mirrors[mirror_name]
         @__mirrors[mirror_name]
       end
+
+      def url(style_name = @options[:default_style], options = {})
+        get_mirror(@options[:default_mirror]).url(style_name, options)
+      end
+
+      def path(style_name = @options[:default_style])
+        get_mirror(@options[:default_mirror]).path(style_name)
+      end
+
+      private
+
+      def queue_some_for_delete(*styles)
+        @__mirrors.values.each do |mirror|
+          @queued_for_delete += styles.uniq.map do |style|
+            mirror.path(style) if exists?(style)
+          end.compact
+        end
+        super
+      end
+
+      def queue_all_for_delete
+        unless @options[:preserve_files]
+          @__mirrors.values.each do |mirror|
+            @queued_for_delete += [:original, *styles.keys].uniq.map do |style|
+              mirror.path(style) if exists?(style)
+            end.compact
+          end
+        end
+        super
+      end
     end
   end
 end
