@@ -5,9 +5,17 @@ module Paperclip
         base.instance_eval do
           @__mirrors = {}
           @options[:mirrors].each do |mirror_name, mirror_options|
-            @__mirrors[mirror_name] = ::Paperclip::Attachment.new(name, instance, mirror_options.merge(styles: @options[:styles]))
+            @__mirrors[mirror_name] = ::Paperclip::Attachment.new(
+              name,
+              instance,
+              mirror_options.merge(styles: @options[:styles])
+            )
           end
-          @__fs_mirror = ::Paperclip::Attachment.new(name, instance, { storage: :filesystem }.merge(styles: @options[:styles]))
+          @__fs_mirror = ::Paperclip::Attachment.new(
+            name,
+            instance,
+            { storage: :filesystem }.merge(styles: @options[:styles])
+          )
         end
       end
 
@@ -35,7 +43,7 @@ module Paperclip
         if !instance.respond_to?("#{name}_processing?") || instance.send("#{name}_processing?") # Hack for delayed_paperclip
           # This happens during processing, not initial creation
           @__mirrors.each do |mirror_name, mirror|
-            files_to_write = Hash[styles_to_write.map {|style_name| [style_name, file_for_style(style_name)]}]
+            files_to_write = Hash[styles_to_write.map { |style_name| [style_name, file_for_style(style_name)] }]
             mirror.instance_variable_set('@queued_for_write', files_to_write)
             Paperclip.log "Writing to mirror #{mirror_name} styles #{styles_to_write}"
             mirror.flush_writes
@@ -49,11 +57,16 @@ module Paperclip
       end
 
       def exists?(style_name = default_style)
-        @__mirrors.values.reduce(true) {|acc, mirror| acc && mirror.exists?(style_name) }
+        @__mirrors.values.reduce(true) { |acc, mirror| acc && mirror.exists?(style_name) }
       end
 
       def copy_to_local_file(style, local_dest_path)
         @__fs_mirror.copy_to_local_file(style, local_dest_path)
+      end
+
+      def get_mirror(mirror_name)
+        return @__fs_mirror unless @__mirrors[mirror_name]
+        @__mirrors[mirror_name]
       end
     end
   end
