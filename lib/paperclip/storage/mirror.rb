@@ -14,7 +14,7 @@ module Paperclip
           @__fs_mirror = ::Paperclip::Attachment.new(
             name,
             instance,
-            { storage: :filesystem }.merge(styles: @options[:styles])
+            { storage: :filesystem }.merge(@options.except(:storage, :mirrors, :keep_local_files, :default_mirror))
           )
         end
       end
